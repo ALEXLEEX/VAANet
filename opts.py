@@ -70,7 +70,7 @@ def parse_opts():
                  type=str,
                  help='ce | pcce_ve8'),
             dict(name='--learning_rate',
-                 default=1e-4,
+                 default=8e-5,
                  type=float,
                  help='Initial learning rate', ),
             dict(name='--weight_decay',
