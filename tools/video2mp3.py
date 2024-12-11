@@ -4,12 +4,15 @@ import sys
 import subprocess
 
 
-def class_process(dir_path, dst_dir_path, class_name):
+# def class_process(dir_path, dst_dir_path, class_name):
+# 修改任务变成回归任务
+def class_process(dir_path, dst_dir_path):
     # src_class_path = os.path.join(dir_path, class_name)
     src_class_path = dir_path
     if not os.path.isdir(src_class_path):
         return
-    dst_class_path = os.path.join(dst_dir_path, class_name)
+    # dst_class_path = os.path.join(dst_dir_path, class_name)
+    dst_class_path = dst_dir_path
     if not os.path.exists(dst_class_path):
         os.makedirs(dst_class_path)
     for file_name in os.listdir(src_class_path):
@@ -31,9 +34,10 @@ if __name__ == "__main__":
     # dir_path = "/project/data/ekman6--mp4"
     # dst_dir_path = "/project/data/ekman6--mp3"
 
-    class_name = sys.argv[3]
+    # class_name = sys.argv[3]
 
     # for class_name in os.listdir(dir_path):
     #     class_process(dir_path, dst_dir_path, class_name)
 
-    class_process(dir_path, dst_dir_path, class_name)
+    # class_process(dir_path, dst_dir_path, class_name)
+    class_process(dir_path, dst_dir_path)

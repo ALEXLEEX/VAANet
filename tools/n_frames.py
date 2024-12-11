@@ -3,8 +3,10 @@ import os
 import sys
 
 
-def class_process(dir_path, class_name):
-    class_path = os.path.join(dir_path, class_name)
+# def class_process(dir_path, class_name):
+def class_process(dir_path):
+    # class_path = os.path.join(dir_path, class_name)
+    class_path = dir_path
     if not os.path.isdir(class_path):
         raise Exception
     for file_name in os.listdir(class_path):
@@ -35,6 +37,7 @@ def class_process(dir_path, class_name):
 
 
 if __name__ == "__main__":
-    dir_path = "/data/jjr/VideoEmotion8--imgs"
-    class_name = sys.argv[1]
-    class_process(dir_path, class_name)
+    dir_path = "/data/jjr/zju-visual-auditory-dataset--imgs"
+    # class_name = sys.argv[1]
+    # class_process(dir_path, class_name)
+    class_process(dir_path)

@@ -95,6 +95,7 @@ def run_model(opt, inputs, model, criterion, i=0, print_attention=True, period=3
     else:
         return y_pred, loss, [alpha, beta, gamma]
 
+# TODO 3. 正确率函数换为 R2、MSE、PCC
 def calculate_accuracy(outputs, targets):
     batch_size = targets.size(0)
     values, indices = outputs.topk(k=1, dim=1, largest=True)

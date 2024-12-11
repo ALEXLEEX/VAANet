@@ -4,12 +4,15 @@ import sys
 import subprocess
 
 
-def class_process(dir_path, dst_dir_path, class_name):
+# def class_process(dir_path, dst_dir_path, class_name):
+# 删去class name 因为我们是回归任务了不是分类
+def class_process(dir_path, dst_dir_path):
     # class_path = os.path.join(dir_path, class_name)
     class_path = dir_path
     if not os.path.isdir(class_path):
         return
-    dst_class_path = os.path.join(dst_dir_path, class_name)
+    # dst_class_path = os.path.join(dst_dir_path, class_name)
+    dst_class_path = dst_dir_path
     if not os.path.exists(dst_dir_path):
         os.mkdir(dst_class_path)
     for file_name in os.listdir(class_path):
@@ -43,8 +46,9 @@ if __name__ == "__main__":
     dst_dir_path = sys.argv[2]  # jpg directory
     # dir_path = "/project/data/ekman6/ekman6--mp4"
     # dst_dir_path = "/project/data/ekman6/ekman6--jpg"
-    class_name = sys.argv[3]
-    class_process(dir_path, dst_dir_path, class_name)
+    # class_name = sys.argv[3]
+    # class_process(dir_path, dst_dir_path, class_name)
+    class_process(dir_path, dst_dir_path)
 
     # for class_name in os.listdir(dir_path):
     #     class_process(dir_path, dst_dir_path, class_name)

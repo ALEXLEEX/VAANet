@@ -144,6 +144,7 @@ class VE8Dataset(data.Dataset):
             snippets_transformed.append(snippet)
         snippets = snippets_transformed
         snippets = torch.stack(snippets, 0)
+        # TODO 把 target 标签换为连续值 不是分类 应该是直接新建一个数据集 按照原有的格式返回即可。
 
         target = self.target_transform(data_item)
         visualization_item = [data_item['video_id']]
@@ -153,6 +154,84 @@ class VE8Dataset(data.Dataset):
     def __len__(self):
         return len(self.data)
 
+class zjuVADataset(data.Dataset):
+    def __init__(self,
+                 video_path,
+                 audio_path,
+                 annotation_path,
+                 subset,
+                 fps=30,
+                 spatial_transform=None,
+                 temporal_transform=None,
+                 target_transform=None,
+                 get_loader=get_default_video_loader,
+                 need_audio=True):
+        # 初始化数据集
+        self.data, self.class_names = make_dataset(
+            video_root_path=video_path,
+            annotation_path=annotation_path,
+            audio_root_path=audio_path,
+            subset=subset,
+            fps=fps,
+            need_audio=need_audio
+        )
+        self.spatial_transform = spatial_transform
+        self.temporal_transform = temporal_transform
+        self.target_transform = target_transform
+        self.loader = get_loader()
+        self.fps = fps
+        self.ORIGINAL_FPS = 30
+        self.need_audio = need_audio
+
+    def __getitem__(self, index):
+        data_item = self.data[index]
+        video_path = data_item['video']
+        frame_indices = data_item['frame_indices']
+        snippets_frame_idx = self.temporal_transform(frame_indices)
+
+        # 音频处理
+        if self.need_audio:
+            timeseries_length = 4096
+            audio_path = data_item['audio']
+            feature = preprocess_audio(audio_path).T
+            k = timeseries_length // feature.shape[0] + 1
+            feature = np.tile(feature, reps=(k, 1))
+            audios = feature[:timeseries_length, :]
+            audios = torch.FloatTensor(audios)
+        else:
+            audios = []
+
+        # 处理视频片段
+        snippets = []
+        for snippet_frame_idx in snippets_frame_idx:
+            snippet = self.loader(video_path, snippet_frame_idx)
+            snippets.append(snippet)
+
+        self.spatial_transform.randomize_parameters()
+        snippets_transformed = []
+        for snippet in snippets:
+            snippet = [self.spatial_transform(img) for img in snippet]
+            snippet = torch.stack(snippet, 0).permute(1, 0, 2, 3)
+            snippets_transformed.append(snippet)
+        snippets = snippets_transformed
+        snippets = torch.stack(snippets, 0)
+
+        # 修改 target 标签为二元离散的 VA 值
+        # 这里假设 data_item['target'] 是一个包含原始八个标签的数组
+        # 可以根据需要修改这个部分，将其转化为二元 VA 值
+        target = self.target_transform(data_item)
+        # 假设 target 是一个包含原始标签的数组，并且我们将其转化为二元 VA 标签
+        # 假设 VA值是 [Valence, Arousal]，例如: [1, 0] 表示 Valence=1, Arousal=0
+        va_label = [target['Valence'], target['Arousal']]  # 有 'Valence' 和 'Arousal' 字段
+        va_target = torch.tensor(va_label)
+
+        # 作为返回项返回
+        visualization_item = [data_item['video_id']]
+
+        return snippets, va_target, audios, visualization_item
+
+    def __len__(self):
+        return len(self.data)
 
 def make_dataset(video_root_path, annotation_path, audio_root_path, subset, fps=30, need_audio=True):
     data = load_annotation_data(annotation_path)

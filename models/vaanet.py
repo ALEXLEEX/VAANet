@@ -46,6 +46,9 @@ class VAANet(VisualStream):
         })
 
         self.av_fc = nn.Linear(self.audio_embed_size + self.hp['k'], self.n_classes)
+        # TODO 只需要改这里 av_fc:
+        # -> n_classes ->[batch_size, n_classes]
+        # -> v, a -> 2 -> [batch_size, 2]
 
     def forward(self, visual: torch.Tensor, audio: torch.Tensor):
         visual = visual.transpose(0, 1).contiguous()

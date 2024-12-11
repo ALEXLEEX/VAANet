@@ -47,7 +47,8 @@ class PCCEVE8(nn.Module):
 
         return out
 
-
+# TODO 2. 把分类任务的损失换为回归任务的损失函数 
+# CrossEntropyLoss -> MSELoss
 def get_loss(opt):
     if opt.loss_func == 'ce':
         return nn.CrossEntropyLoss()
