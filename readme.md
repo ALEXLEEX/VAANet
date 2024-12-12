@@ -56,6 +56,17 @@ Assume the strcture of data directories is the following:
   ve8_01.json
 ```
 
+```misc
+~/
+  zju-video-audio--imgs
+    .../ (directories of video names)
+      .../ (jpg files)
+  zju-video-audio--mp3
+    .../ (mp3 files)
+  results
+  Video-Audio-Labels.json
+```
+
 Confirm all options in ```~/opts.py```.
 ```bash
 python main.py
