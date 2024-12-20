@@ -52,6 +52,7 @@ def train_epoch(epoch, data_loader, model, criterion, optimizer, opt, class_name
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'PCC {acc.val:.3f} ({acc.avg:.3f})'.format(
                 epoch, i + 1, len(data_loader), batch_time=batch_time, data_time=data_time, loss=losses, acc=accuracies))
+            print()
 
     # ---------------------------------------------------------------------- #
     print("Epoch Time: {:.2f}min".format(batch_time.avg * len(data_loader) / 60))

@@ -110,32 +110,85 @@ def run_model(opt, inputs, model, criterion, i=0, print_attention=True, period=3
 
 import torch
 
+# def calculate_accuracy(outputs, targets, metric='r2'):
+#     print(str(outputs.shape)+"and "+str(targets.shape)+"end /\n")
+#     # 计算 R2、MSE 或 PCC
+#     if metric == 'r2':
+#         # 计算 R²
+#         residual_sum_of_squares = torch.sum((targets - outputs) ** 2)
+#         total_sum_of_squares = torch.sum((targets - torch.mean(targets)) ** 2)
+#         r2_score = 1 - residual_sum_of_squares / total_sum_of_squares
+#         return r2_score.item()
+    
+#     elif metric == 'mse':
+#         # 计算 MSE
+#         mse = torch.mean((outputs - targets) ** 2)
+#         return mse.item()
+    
+#     elif metric == 'pcc':
+#         # 计算 Pearson Correlation Coefficient (PCC)
+#         # 先去均值，再计算协方差和标准差
+#         mean_outputs = torch.mean(outputs)
+#         mean_targets = torch.mean(targets)
+        
+#         covariance = torch.sum((outputs - mean_outputs) * (targets - mean_targets))
+#         std_outputs = torch.sqrt(torch.sum((outputs - mean_outputs) ** 2))
+#         std_targets = torch.sqrt(torch.sum((targets - mean_targets) ** 2))
+        
+#         pcc = covariance / (std_outputs * std_targets)
+#         return pcc.item()
+    
+#     else:
+#         raise ValueError(f"Unknown metric: {metric}")
+
 def calculate_accuracy(outputs, targets, metric='r2'):
-    # 计算 R2、MSE 或 PCC
-    if metric == 'r2':
-        # 计算 R²
-        residual_sum_of_squares = torch.sum((targets - outputs) ** 2)
-        total_sum_of_squares = torch.sum((targets - torch.mean(targets)) ** 2)
-        r2_score = 1 - residual_sum_of_squares / total_sum_of_squares
-        return r2_score.item()
-    
-    elif metric == 'mse':
-        # 计算 MSE
-        mse = torch.mean((outputs - targets) ** 2)
-        return mse.item()
-    
-    elif metric == 'pcc':
-        # 计算 Pearson Correlation Coefficient (PCC)
-        # 先去均值，再计算协方差和标准差
-        mean_outputs = torch.mean(outputs)
-        mean_targets = torch.mean(targets)
-        
-        covariance = torch.sum((outputs - mean_outputs) * (targets - mean_targets))
-        std_outputs = torch.sqrt(torch.sum((outputs - mean_outputs) ** 2))
-        std_targets = torch.sqrt(torch.sum((targets - mean_targets) ** 2))
-        
-        pcc = covariance / (std_outputs * std_targets)
-        return pcc.item()
-    
-    else:
-        raise ValueError(f"Unknown metric: {metric}")
+    """
+    计算 V 和 A 两个维度的正确率，并返回平均值。
+
+    参数：
+        outputs (torch.Tensor): 模型的输出，形状为 [batch_size, 2]。
+        targets (torch.Tensor): 目标值，形状为 [batch_size, 2]。
+        metric (str): 评价指标类型，可选 'r2', 'mse', 或 'pcc'。
+
+    返回：
+        float: V 和 A 两个维度的平均正确率。
+    """
+    assert outputs.shape == targets.shape, "Outputs and targets must have the same shape"
+    assert outputs.shape[1] == 2, "The second dimension of outputs and targets must be 2 (representing V and A)"
+
+    # 分别计算 V 和 A 的指标
+    results = []
+    for i in range(2):  # 遍历 V 和 A 两个维度
+        output = outputs[:, i]
+        target = targets[:, i]
+
+        if metric == 'r2':
+            # 计算 R²
+            residual_sum_of_squares = torch.sum((target - output) ** 2)
+            total_sum_of_squares = torch.sum((target - torch.mean(target)) ** 2)
+            r2_score = 1 - residual_sum_of_squares / total_sum_of_squares
+            results.append(r2_score.item())
+
+        elif metric == 'mse':
+            # 计算 MSE
+            mse = torch.mean((output - target) ** 2)
+            results.append(mse.item())
+
+        elif metric == 'pcc':
+            # 计算 Pearson Correlation Coefficient (PCC)
+            mean_output = torch.mean(output)
+            mean_target = torch.mean(target)
+
+            covariance = torch.sum((output - mean_output) * (target - mean_target))
+            std_output = torch.sqrt(torch.sum((output - mean_output) ** 2))
+            std_target = torch.sqrt(torch.sum((target - mean_target) ** 2))
+
+            pcc = covariance / (std_output * std_target)
+            results.append(pcc.item())
+
+        else:
+            raise ValueError(f"Unknown metric: {metric}")
+
+    # 返回 V 和 A 的平均值
+    print("V PCC: " + str(results[0]) + " A PCC: " + str(results[1]))
+    return sum(results) / len(results)

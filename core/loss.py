@@ -56,5 +56,16 @@ def get_loss(opt):
         return nn.MSELoss()
     elif opt.loss_func == 'pcce_ve8':
         return PCCEVE8(lambda_0=opt.lambda_0)
+    elif opt.loss_func == 'va_mse':
+        def va_mse_loss(outputs, targets):
+            assert outputs.shape == targets.shape, "Outputs and targets must have the same shape"
+            assert outputs.shape[1] == 2, "The second dimension of outputs and targets must be 2 (representing V and A)"
+
+            v_loss = nn.MSELoss()(outputs[:, 0], targets[:, 0]).cuda()
+            a_loss = nn.MSELoss()(outputs[:, 1], targets[:, 1]).cuda()
+
+            return (v_loss + a_loss) / 2
+
+        return va_mse_loss
     else:
         raise Exception(f"Unknown loss function: {opt.loss_func}")

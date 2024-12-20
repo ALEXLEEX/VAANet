@@ -25,7 +25,7 @@ def main():
     model, parameters = generate_model(opt)
 
     criterion = get_loss(opt)
-    criterion = criterion.cuda()
+    # criterion = criterion.cuda()
     optimizer = get_optim(opt, parameters)
 
     writer = SummaryWriter(logdir=opt.log_path)
