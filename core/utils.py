@@ -110,37 +110,6 @@ def run_model(opt, inputs, model, criterion, i=0, print_attention=True, period=3
 
 import torch
 
-# def calculate_accuracy(outputs, targets, metric='r2'):
-#     print(str(outputs.shape)+"and "+str(targets.shape)+"end /\n")
-#     # 计算 R2、MSE 或 PCC
-#     if metric == 'r2':
-#         # 计算 R²
-#         residual_sum_of_squares = torch.sum((targets - outputs) ** 2)
-#         total_sum_of_squares = torch.sum((targets - torch.mean(targets)) ** 2)
-#         r2_score = 1 - residual_sum_of_squares / total_sum_of_squares
-#         return r2_score.item()
-    
-#     elif metric == 'mse':
-#         # 计算 MSE
-#         mse = torch.mean((outputs - targets) ** 2)
-#         return mse.item()
-    
-#     elif metric == 'pcc':
-#         # 计算 Pearson Correlation Coefficient (PCC)
-#         # 先去均值，再计算协方差和标准差
-#         mean_outputs = torch.mean(outputs)
-#         mean_targets = torch.mean(targets)
-        
-#         covariance = torch.sum((outputs - mean_outputs) * (targets - mean_targets))
-#         std_outputs = torch.sqrt(torch.sum((outputs - mean_outputs) ** 2))
-#         std_targets = torch.sqrt(torch.sum((targets - mean_targets) ** 2))
-        
-#         pcc = covariance / (std_outputs * std_targets)
-#         return pcc.item()
-    
-#     else:
-#         raise ValueError(f"Unknown metric: {metric}")
-
 def calculate_accuracy(outputs, targets, metric='r2'):
     """
     计算 V 和 A 两个维度的正确率，并返回平均值。
