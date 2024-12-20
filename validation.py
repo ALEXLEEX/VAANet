@@ -9,13 +9,13 @@ def val_epoch(epoch, data_loader, model, criterion, opt, writer, optimizer):
     print("# ---------------------------------------------------------------------- #")
     print('Validation at epoch {}'.format(epoch))
     model.eval()
-    print("end of model.eval()")
+    # print("end of model.eval()")
 
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
     accuracies = AverageMeter()
-    print("end of AverageMeter()")
+    # print("end of AverageMeter()")
 
     end_time = time.time()
 
@@ -25,7 +25,7 @@ def val_epoch(epoch, data_loader, model, criterion, opt, writer, optimizer):
         with torch.no_grad():
             output, loss = run_model(opt, [visual, target, audio], model, criterion, i)
 
-        acc = calculate_accuracy(output, target)
+        acc = calculate_accuracy(output, target, 'pcc')
 
         losses.update(loss.item(), batch_size)
         accuracies.update(acc, batch_size)
@@ -37,7 +37,7 @@ def val_epoch(epoch, data_loader, model, criterion, opt, writer, optimizer):
     writer.add_scalar('val/loss', losses.avg, epoch)
     writer.add_scalar('val/acc', accuracies.avg, epoch)
     print("Val loss: {:.4f}".format(losses.avg))
-    print("Val acc: {:.4f}".format(accuracies.avg))
+    print("Val PCC: {:.4f}".format(accuracies.avg))
 
     save_file_path = os.path.join(opt.ckpt_path, 'save_{}.pth'.format(epoch))
     states = {

@@ -85,8 +85,12 @@ def preprocess_audio(audio_path):
     mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=32)
     return mfccs
 
+# 以上会不会有重名函数的问题
+# 现在就是处理这里 把这里弄成正确输出的VA值
+import json
+import torch
 
-class VE8Dataset(data.Dataset):
+class zjuVADataset(data.Dataset):
     def __init__(self,
                  video_path,
                  audio_path,
@@ -98,6 +102,13 @@ class VE8Dataset(data.Dataset):
                  target_transform=None,
                  get_loader=get_default_video_loader,
                  need_audio=True):
+        # 加载标签文件 (假设是JSON格式)
+        with open(annotation_path, 'r') as f:
+            self.annotations = json.load(f)  # 加载整个JSON文件
+
+        self.valence = self.annotations["Valence"]  # 获取Valence字典
+        self.arousal = self.annotations["Arousal"]  # 获取Arousal字典
+        
         self.data, self.class_names = make_dataset(
             video_root_path=video_path,
             annotation_path=annotation_path,
@@ -106,12 +117,13 @@ class VE8Dataset(data.Dataset):
             fps=fps,
             need_audio=need_audio
         )
+
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
         self.target_transform = target_transform
         self.loader = get_loader()
         self.fps = fps
-        self.ORIGINAL_FPS = 30
+        self.ORIGINAL_FPS = 24
         self.need_audio = need_audio
 
     def __getitem__(self, index):
@@ -120,6 +132,7 @@ class VE8Dataset(data.Dataset):
         frame_indices = data_item['frame_indices']
         snippets_frame_idx = self.temporal_transform(frame_indices)
 
+        # 音频处理
         if self.need_audio:
             timeseries_length = 4096
             audio_path = data_item['audio']
@@ -131,6 +144,7 @@ class VE8Dataset(data.Dataset):
         else:
             audios = []
 
+        # 处理视频片段
         snippets = []
         for snippet_frame_idx in snippets_frame_idx:
             snippet = self.loader(video_path, snippet_frame_idx)
@@ -144,59 +158,80 @@ class VE8Dataset(data.Dataset):
             snippets_transformed.append(snippet)
         snippets = snippets_transformed
         snippets = torch.stack(snippets, 0)
-        # TODO 把 target 标签换为连续值 不是分类 应该是直接新建一个数据集 按照原有的格式返回即可。
 
-        target = self.target_transform(data_item)
+        # 获取目标标签 (Valence and Arousal) 从JSON标签文件
+        sample_id = data_item['video_id']  # 假设video_id对应SampleID
+        valence_value = self.valence.get(sample_id, 0)  # 默认为0，如果SampleID没有找到
+        arousal_value = self.arousal.get(sample_id, 0)  # 默认为0，如果SampleID没有找到
+
+        va_target = torch.tensor([valence_value, arousal_value])  # 将Valence和Arousal值作为标签
+
         visualization_item = [data_item['video_id']]
 
-        return snippets, target, audios, visualization_item
+        return snippets, va_target, audios, visualization_item
 
     def __len__(self):
         return len(self.data)
 
-
+    
+    
 def make_dataset(video_root_path, annotation_path, audio_root_path, subset, fps=30, need_audio=True):
-    data = load_annotation_data(annotation_path)
-    video_names, annotations = get_video_names_and_annotations(data, subset)
-    class_to_idx = get_class_labels(data)
-    idx_to_class = {}
-    for name, label in class_to_idx.items():
-        idx_to_class[label] = name
-
+    # 加载标签文件
+    with open(annotation_path, 'r') as f:
+        annotations = json.load(f)  # 包含 Valence 和 Arousal 字段
+    
+    # 获取视频目录
+    video_dirs = [d for d in os.listdir(video_root_path) if os.path.isdir(os.path.join(video_root_path, d))]
+    
     dataset = []
-    for i in range(len(video_names)):
+    for i, video_dir in enumerate(video_dirs):
         if i % 100 == 0:
-            print("Dataset loading [{}/{}]".format(i, len(video_names)))
-        video_path = os.path.join(video_root_path, video_names[i])
+            print(f"Dataset loading [{i}/{len(video_dirs)}]")
+        
+        video_path = os.path.join(video_root_path, video_dir)  # 视频目录路径
+        
         if need_audio:
-            audio_path = os.path.join(audio_root_path, video_names[i] + '.mp3')
+            audio_path = os.path.join(audio_root_path, f"{video_dir}.mp3")  # 音频路径
         else:
             audio_path = None
-
-        assert os.path.exists(audio_path), audio_path
-        assert os.path.exists(video_path), video_path
-
-        n_frames_file_path = os.path.join(video_path, 'n_frames')
-        n_frames = int(load_value_file(n_frames_file_path))
+        
+        assert os.path.exists(video_path), f"Video directory not found: {video_path}"
+        if need_audio:
+            assert os.path.exists(audio_path), f"Audio file not found: {audio_path}"
+        
+        # 从 annotations 中获取 VA 值
+        valence_value = annotations["Valence"].get(video_dir, 0)  # 默认为 0
+        arousal_value = annotations["Arousal"].get(video_dir, 0)  # 默认为 0
+        
+        # 获取帧数（假设 JPEG 文件以连续数字命名，例如 1.jpg, 2.jpg...）
+        frame_files = [f for f in os.listdir(video_path) if f.endswith('.jpg')]
+        n_frames = len(frame_files)
         if n_frames <= 0:
-            print(video_path)
+            print(f"No frames found in: {video_path}")
             continue
-
+        
         begin_t = 1
         end_t = n_frames
         sample = {
             'video': video_path,
             'segment': [begin_t, end_t],
             'n_frames': n_frames,
-            'video_id': video_names[i].split('/')[1],
+            'video_id': video_dir,
         }
-        if need_audio: sample['audio'] = audio_path
-        assert len(annotations) != 0
-        sample['label'] = class_to_idx[annotations[i]['label']]
 
-        ORIGINAL_FPS = 30
+        # 添加音频路径
+        if need_audio:
+            sample['audio'] = audio_path
+        
+        # 将 VA 值作为 target
+        va_target = [valence_value, arousal_value]
+        sample['target'] = va_target
+
+        # 计算帧索引
+        ORIGINAL_FPS = 24  # 假设原始帧率为 24
         step = ORIGINAL_FPS // fps
-
         sample['frame_indices'] = list(range(1, n_frames + 1, step))
+        
         dataset.append(sample)
-    return dataset, idx_to_class
+    
+    return dataset, video_dirs

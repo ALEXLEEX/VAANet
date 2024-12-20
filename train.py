@@ -25,7 +25,7 @@ def train_epoch(epoch, data_loader, model, criterion, optimizer, opt, class_name
         output, loss = run_model(opt, [visual, target, audio], model, criterion, i, print_attention=False)
         # print("end of run_model()")
 
-        acc = calculate_accuracy(output, target)
+        acc = calculate_accuracy(output, target, 'pcc')
 
         losses.update(loss.item(), batch_size)
         accuracies.update(acc, batch_size)
@@ -50,13 +50,14 @@ def train_epoch(epoch, data_loader, model, criterion, optimizer, opt, class_name
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Acc {acc.val:.3f} ({acc.avg:.3f})'.format(
+                  'PCC {acc.val:.3f} ({acc.avg:.3f})'.format(
                 epoch, i + 1, len(data_loader), batch_time=batch_time, data_time=data_time, loss=losses, acc=accuracies))
 
     # ---------------------------------------------------------------------- #
     print("Epoch Time: {:.2f}min".format(batch_time.avg * len(data_loader) / 60))
     print("Train loss: {:.4f}".format(losses.avg))
-    print("Train acc: {:.4f}".format(accuracies.avg))
-
+    # print("Train acc: {:.4f}".format(accuracies.avg))
+    print("Train PCC: {:.4f}".format(accuracies.avg))
+    
     writer.add_scalar('train/epoch/loss', losses.avg, epoch)
     writer.add_scalar('train/epoch/acc', accuracies.avg, epoch)

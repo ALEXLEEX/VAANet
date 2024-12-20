@@ -23,12 +23,13 @@ def parse_opts():
                  help='Global path of root directory'),
             dict(name="--video_path",
                #   default="VideoEmotion8--imgs",
-                 default="/data/jjr/VideoEmotion8--imgs",
+                 default="/data/jjr/zju-visual-auditory-dataset--imgs",
                  type=str,
                  help='Local path of videos', ),
             dict(name="--annotation_path",
                #   default='ve8_01.json',
-                 default='/data/jjr/ve8_01.json',
+               #   default='/data/jjr/ve8_01.json',
+                 default="/data/jjr/Video-Audio-Labels.json",
                  type=str,
                  help='Local path of annotation file'),
             dict(name="--result_path",
@@ -42,7 +43,8 @@ def parse_opts():
             dict(name='--audio_path',
                  type=str,
                #   default='VideoEmotion8--mp3',
-                 default='/data/jjr/VideoEmotion8--mp3',
+               #   default='/data/jjr/VideoEmotion8--mp3',
+                 default="/data/jjr/zju-visual-auditory-dataset--mp3",
                  help='Local path of audios')
 
         ],
@@ -66,9 +68,10 @@ def parse_opts():
                  default=12,
                  type=int),
             dict(name='--loss_func',
-                 default='pcce_ve8',
+               #   default='pcce_ve8',
+                 default="mse",
                  type=str,
-                 help='ce | pcce_ve8'),
+                 help='ce | pcce_ve8 | mse'),
             dict(name='--learning_rate',
                  default=8e-5,
                  type=float,
@@ -78,7 +81,8 @@ def parse_opts():
                  type=float,
                  help='Weight Decay'),
             dict(name='--fps',
-                 default=30,
+               #   default=30,
+                 default=24,
                  type=int,
                  help='fps')
 
@@ -99,7 +103,8 @@ def parse_opts():
         'common': [
             dict(name='--dataset',
                  type=str,
-                 default='ve8',
+               #   default='ve8',
+                 default='zju_va',
                  ),
             dict(name='--use_cuda',
                  action='store_true',
@@ -121,7 +126,7 @@ def parse_opts():
             ),
             dict(
                 name='--n_epochs',
-                default=100,
+                default=25,
                 type=int,
                 help='Number of total epochs to run',
             )

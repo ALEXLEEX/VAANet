@@ -52,7 +52,9 @@ class PCCEVE8(nn.Module):
 def get_loss(opt):
     if opt.loss_func == 'ce':
         return nn.CrossEntropyLoss()
+    elif opt.loss_func == 'mse':  # 添加回归任务的损失函数
+        return nn.MSELoss()
     elif opt.loss_func == 'pcce_ve8':
         return PCCEVE8(lambda_0=opt.lambda_0)
     else:
-        raise Exception
+        raise Exception(f"Unknown loss function: {opt.loss_func}")

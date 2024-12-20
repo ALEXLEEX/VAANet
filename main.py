@@ -46,7 +46,7 @@ def main():
 
     for i in range(1, opt.n_epochs + 1):
         train_epoch(i, train_loader, model, criterion, optimizer, opt, training_data.class_names, writer)
-        val_epoch(i, val_loader, model, criterion, opt, writer, optimizer)
+        # val_epoch(i, val_loader, model, criterion, opt, writer, optimizer)
 
     writer.close()
 
