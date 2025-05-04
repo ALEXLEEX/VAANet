@@ -145,6 +145,7 @@ class zjuVADataset(data.Dataset):
             audios = []
 
         # 处理视频片段
+        # TODO: 检查是否存在缓存文件
         snippets = []
         for snippet_frame_idx in snippets_frame_idx:
             snippet = self.loader(video_path, snippet_frame_idx)
@@ -158,6 +159,8 @@ class zjuVADataset(data.Dataset):
             snippets_transformed.append(snippet)
         snippets = snippets_transformed
         snippets = torch.stack(snippets, 0)
+        
+        # TODO:缓存snippets，保存成pytorch的权重文件，调用torch.save()
 
         # 获取目标标签 (Valence and Arousal) 从JSON标签文件
         sample_id = data_item['video_id']  # 假设video_id对应SampleID
