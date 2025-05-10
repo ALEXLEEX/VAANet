@@ -176,9 +176,9 @@ class zjuVADataset(data.Dataset):
     def __len__(self):
         return len(self.data)
 
-    
-    
-def make_dataset(video_root_path, annotation_path, audio_root_path, subset, fps=30, need_audio=True):
+import random
+# 增加split_ratio 和 seed 以便划分
+def make_dataset(video_root_path, annotation_path, audio_root_path, subset, fps=30, need_audio=True, split_ratio=0.8, seed=2025):
     # 加载标签文件
     with open(annotation_path, 'r') as f:
         annotations = json.load(f)  # 包含 Valence 和 Arousal 字段
@@ -236,5 +236,19 @@ def make_dataset(video_root_path, annotation_path, audio_root_path, subset, fps=
         sample['frame_indices'] = list(range(1, n_frames + 1, step))
         
         dataset.append(sample)
+    
+    dataset_all = dataset
+    train_len = int(len(dataset_all) * split_ratio)
+    # 随机洗牌
+    random.seed(seed)
+    random.shuffle(dataset_all)
+    if subset == 'training':
+        dataset = dataset_all[:train_len]
+    elif subset == 'validation':
+        dataset = dataset_all[train_len:]
+    else:
+        raise ValueError(f"subset must be training | validation, got {subset}")
+    
+    
     
     return dataset, video_dirs

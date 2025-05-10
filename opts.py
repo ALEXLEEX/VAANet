@@ -39,6 +39,9 @@ def parse_opts():
                  help="Local path of result directory"),
             dict(name='--expr_name',
                  type=str,
+          # main.py 会把日志和 checkpoint 写到 opt.result_path/opt.expr_name/ 下
+          # local2global_path 会给你补全 opt.log_path、opt.ckpt_path 等变量
+          # 所以只要给 --expr_name 起个不会重复的名字即可 。
                  default=''),
             dict(name='--audio_path',
                  type=str,

@@ -25,8 +25,10 @@ def train_epoch(epoch, data_loader, model, criterion, optimizer, opt, class_name
         output, loss = run_model(opt, [visual, target, audio], model, criterion, i, print_attention=False)
         # print("end of run_model()")
 
+        # 获取这个batch的PCC也就是8个pred和real相关性多少
         acc = calculate_accuracy(output, target, 'pcc')
 
+        # 求加入这个batch之后的整个epoch平均loss
         losses.update(loss.item(), batch_size)
         accuracies.update(acc, batch_size)
 

@@ -4,6 +4,17 @@ import shutil
 
 from transforms.spatial import Preprocessing
 
+import re
+def _next_suffix(path):
+    """若 path 已存在，则返回 path_1 / path_2 ... 中最小的可用路径"""
+    if not os.path.exists(path):
+        return path
+    suffix = 1
+    while True:
+        new_path = f"{path}_{suffix}"
+        if not os.path.exists(new_path):
+            return new_path
+        suffix += 1
 
 def local2global_path(opt):
     if opt.root_path != '':
@@ -17,19 +28,31 @@ def local2global_path(opt):
             now = datetime.datetime.now()
             now = now.strftime('result_%Y%m%d_%H%M%S')
             opt.result_path = os.path.join(opt.result_path, now)
+        # else:
+        #     opt.result_path = os.path.join(opt.result_path, opt.expr_name)
+
+        #     if os.path.exists(opt.result_path):
+        #         shutil.rmtree(opt.result_path)
+        #     os.mkdir(opt.result_path)
         else:
             opt.result_path = os.path.join(opt.result_path, opt.expr_name)
 
+            # 若 --overwrite，直接删 否则自动找下一个不冲突的目录
             if os.path.exists(opt.result_path):
-                shutil.rmtree(opt.result_path)
-            os.mkdir(opt.result_path)
+                if getattr(opt, "overwrite", False):
+                    shutil.rmtree(opt.result_path)
+                else:
+                    opt.result_path = _next_suffix(opt.result_path)
+            os.makedirs(opt.result_path, exist_ok=True)
 
         opt.log_path = os.path.join(opt.result_path, "tensorboard")
         opt.ckpt_path = os.path.join(opt.result_path, "checkpoints")
         if not os.path.exists(opt.log_path):
             os.makedirs(opt.log_path)
+        # if not os.path.exists(opt.ckpt_path):
+            # os.mkdir(opt.ckpt_path)
         if not os.path.exists(opt.ckpt_path):
-            os.mkdir(opt.ckpt_path)
+            os.makedirs(opt.ckpt_path)
     else:
         raise Exception
 
@@ -152,8 +175,29 @@ def calculate_accuracy(outputs, targets, metric='r2'):
             std_output = torch.sqrt(torch.sum((output - mean_output) ** 2))
             std_target = torch.sqrt(torch.sum((target - mean_target) ** 2))
 
-            pcc = covariance / (std_output * std_target)
-            results.append(pcc.item())
+            std_output_val = std_output.item()
+            std_target_val = std_target.item()
+
+            if std_output_val < 1e-9 or std_target_val < 1e-9: # 检查标准差是否过小
+                # 如果其中一个标准差为0（或非常小），则相关性未定义或为0
+                # 如果协方差也为0，那么可以认为是0相关性
+                # 如果协方差不为0，但标准差为0，这是一种退化情况，PCC未定义
+                pcc_value = 0.0 # 或者 torch.nan，取决于您想如何处理这种情况
+                if covariance.item() == 0.0 and (std_output_val < 1e-9 and std_target_val < 1e-9):
+                    pcc_value = 1.0 # 如果两者都是常数且相同，可以认为是完全相关（尽管这有点特殊）
+                                    # 或者更安全地设为0.0，因为没有“变化”可以关联
+                elif covariance.item() == 0.0:
+                     pcc_value = 0.0
+                else:
+                    # pcc_value = torch.nan # 如果协方差非0，但标准差为0，则确实是 NaN
+                    print("pcc_value = Nan\n")
+                    pcc_value = 0.0
+            else:
+                pcc = covariance / (std_output * std_target)
+                pcc_value = pcc.item()
+
+            # results.append(pcc.item())
+            results.append(pcc_value)
 
         else:
             raise ValueError(f"Unknown metric: {metric}")
