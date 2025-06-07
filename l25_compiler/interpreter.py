@@ -23,6 +23,30 @@ class Environment:
     def define(self, name, value=0):
         self.vars[name] = value
 
+    def lookup_env(self, name):
+        if name in self.vars:
+            return self
+        if self.parent:
+            return self.parent.lookup_env(name)
+        raise NameError(f'Undefined variable {name}')
+
+class Pointer:
+    def __init__(self, container, key):
+        self.container = container
+        self.key = key
+
+    def get(self):
+        if isinstance(self.container, Environment):
+            return self.container.vars[self.key]
+        else:
+            return self.container[self.key]
+
+    def set(self, value):
+        if isinstance(self.container, Environment):
+            self.container.vars[self.key] = value
+        else:
+            self.container[self.key] = value
+
 class Interpreter:
     def __init__(self, ast):
         self.ast = ast
@@ -49,11 +73,20 @@ class Interpreter:
         if isinstance(node, StructLiteral):
             return {k: self.eval_expr(v, env) for k, v in node.fields.items()}
         if isinstance(node, UnaryOp):
-            val = self.eval_expr(node.operand, env)
             if node.op == '+':
+                val = self.eval_expr(node.operand, env)
                 return +val
-            else:
+            if node.op == '-':
+                val = self.eval_expr(node.operand, env)
                 return -val
+            if node.op == '&':
+                return self.make_pointer(node.operand, env)
+            if node.op == '*':
+                ptr = self.eval_expr(node.operand, env)
+                if not isinstance(ptr, Pointer):
+                    raise RuntimeError('Cannot dereference non-pointer')
+                return ptr.get()
+            raise RuntimeError(f'Unknown unary operator {node.op}')
         if isinstance(node, BinaryOp):
             left = self.eval_expr(node.left, env)
             right = self.eval_expr(node.right, env)
@@ -106,6 +139,11 @@ class Interpreter:
             elif isinstance(target, FieldAccess):
                 obj = self.eval_expr(target.obj, env)
                 obj[target.field] = val
+            elif isinstance(target, UnaryOp) and target.op == '*':
+                ptr = self.eval_expr(target.operand, env)
+                if not isinstance(ptr, Pointer):
+                    raise RuntimeError('Cannot dereference non-pointer')
+                ptr.set(val)
             else:
                 raise RuntimeError('Invalid assignment target')
         elif isinstance(stmt, If):
@@ -140,3 +178,16 @@ class Interpreter:
             new_env.define(name, self.eval_expr(arg, env))
         self.exec_stmt_list(func.body, new_env)
         return self.eval_expr(func.ret, new_env)
+
+    def make_pointer(self, target, env):
+        if isinstance(target, Identifier):
+            e = env.lookup_env(target.name)
+            return Pointer(e, target.name)
+        if isinstance(target, ArrayAccess):
+            arr = self.eval_expr(target.array, env)
+            idx = self.eval_expr(target.index, env)
+            return Pointer(arr, idx)
+        if isinstance(target, FieldAccess):
+            obj = self.eval_expr(target.obj, env)
+            return Pointer(obj, target.field)
+        raise RuntimeError('Address-of operand must be a variable')

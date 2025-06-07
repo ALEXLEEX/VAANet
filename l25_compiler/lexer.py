@@ -4,7 +4,7 @@ import re
 TOKEN_SPEC = [
     ('NUMBER', r'\d+'),
     ('ID', r'[A-Za-z][A-Za-z0-9]*'),
-    ('OP', r'==|!=|<=|>=|[+\-*/=<>]'),
+    ('OP', r'==|!=|<=|>=|[+\-*/=<&>]'),
     ('LPAREN', r'\('),
     ('RPAREN', r'\)'),
     ('LBRACE', r'\{'),

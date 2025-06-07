@@ -2,7 +2,8 @@
 
 This directory contains a simple compiler and interpreter for the L25 language
 written in Python. In addition to the base features, it implements support for
-one‑dimensional static arrays and simple structures (structs).
+one‑dimensional static arrays, simple structures (structs), and basic
+pointer operations (`&` address-of and `*` dereference).
 
 ## Usage
 
@@ -38,3 +39,4 @@ python -m l25_compiler.main --tokens --ir --tac --no-run \
 - `fibonacci.l25`: Output Fibonacci sequence up to `n`.
 - `sum.l25`: Sum numbers from 1 to `n`.
 - `array_struct.l25`: Demonstrates arrays and structs.
+- `pointer.l25`: Demonstrates basic pointer usage.

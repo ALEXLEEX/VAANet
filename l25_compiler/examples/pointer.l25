@@ -1,0 +1,16 @@
+program ptr {
+func swap(a, b) {
+    let temp = *a;
+    *a = *b;
+    *b = temp;
+    return 0;
+}
+main {
+    let x = 3;
+    let y = 5;
+    let px = &x;
+    let py = &y;
+    swap(px, py);
+    output(x, y);
+}
+}

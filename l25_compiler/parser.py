@@ -88,6 +88,8 @@ class Parser:
                 return self.func_call()
             else:
                 return self.assign_stmt()
+        if tok.type == 'OP' and tok.value == '*':
+            return self.assign_stmt()
         if tok.type == 'IF':
             return self.if_stmt()
         if tok.type == 'WHILE':
@@ -113,12 +115,17 @@ class Parser:
             self.pos -= 1 if self.tokens[self.pos-1].type == 'OP' else 0
         return Declare(name, expr, size)
 
-    # assign_stmt = variable "=" expr
+    # assign_stmt = assign_target "=" expr
     def assign_stmt(self):
-        target = self.variable()
+        target = self.assign_target()
         self.expect('OP')  # '='
         expr = self.expr()
         return Assign(target, expr)
+
+    def assign_target(self):
+        if self.accept('OP') and self.tokens[self.pos-1].value == '*':
+            return UnaryOp('*', self.assign_target())
+        return self.variable()
 
     # if_stmt = "if" "(" bool_expr ")" "{" stmt_list "}" [ "else" "{" stmt_list "}" ]
     def if_stmt(self):
@@ -253,12 +260,18 @@ class Parser:
             node = BinaryOp(op, node, right)
         return node
 
-    # factor = ident | number | "(" expr ")" | func_call | array_literal | struct_literal
+    # factor = ["*" factor | "&" variable | ident | number | "(" expr ")" | func_call | array_literal | struct_literal]
     def factor(self):
         tok = self.current()
         if tok.type == 'NUMBER':
             self.pos += 1
             return Number(tok.value)
+        if tok.type == 'OP' and tok.value == '&':
+            self.pos += 1
+            return UnaryOp('&', self.variable())
+        if tok.type == 'OP' and tok.value == '*':
+            self.pos += 1
+            return UnaryOp('*', self.factor())
         if tok.type == 'ID':
             if self.tokens[self.pos+1].type == 'LPAREN':
                 return self.func_call()
