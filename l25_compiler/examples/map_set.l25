@@ -1,0 +1,15 @@
+program demo {
+main {
+    let m = map { 1: 10; 2: 20; };
+    let s = set { 3; };
+    map_insert(m, 3, 30);
+    set_add(s, 4);
+    output(m[1], map_get(m, 3), set_contains(s, 4));
+    let keys = map_keys(m);
+    let i = 0;
+    while (i < 3) {
+        output(keys[i], m[keys[i]]);
+        i = i + 1;
+    };
+}
+}

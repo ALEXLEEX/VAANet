@@ -1,0 +1,11 @@
+program fact {
+main {
+    input(n);
+    let res = 1;
+    while (n > 1) {
+        res = res * n;
+        n = n - 1;
+    };
+    output(res);
+}
+}
