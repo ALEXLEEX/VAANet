@@ -16,6 +16,7 @@ inspection of intermediate stages:
 - `--tokens` &ndash; output the token stream
 - `--ast` &ndash; dump the parsed abstract syntax tree
 - `--ir` &ndash; print a simplified intermediate representation
+- `--tac` &ndash; emit linear three-address code
 - `--no-run` &ndash; skip execution after generating the chosen outputs
 
 ## Testing
@@ -27,7 +28,8 @@ one normally or request intermediate output:
 python -m l25_compiler.main examples/factorial.l25
 
 # show tokens and IR only
-python -m l25_compiler.main --tokens --ir --no-run examples/factorial.l25
+python -m l25_compiler.main --tokens --ir --tac --no-run \
+    examples/factorial.l25
 ```
 
 ## Example Programs
