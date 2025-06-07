@@ -57,4 +57,4 @@ The interpreter provides a few built-in functions for manipulating `map` and
 - `sum.l25`: Sum numbers from 1 to `n`.
 - `array_struct.l25`: Demonstrates arrays and structs.
 - `pointer.l25`: Demonstrates basic pointer usage.
-- `map_set.l25`: Demonstrates map and set operations.
+- `map_set.l25`: Demonstrates map and set operations using all helper functions.
