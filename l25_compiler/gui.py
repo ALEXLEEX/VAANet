@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, scrolledtext
+from tkinter import filedialog, scrolledtext, ttk
 import io
 from contextlib import redirect_stdout
 from .lexer import tokenize
@@ -90,16 +90,23 @@ class L25GUI:
         output_frame = tk.Frame(root)
         output_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        self.token_output = self._create_output_box(output_frame, "词法")
-        self.ast_output = self._create_output_box(output_frame, "AST")
-        self.ir_output = self._create_output_box(output_frame, "IR")
-        self.tac_output = self._create_output_box(output_frame, "TAC")
-        self.run_output = self._create_output_box(output_frame, "运行结果")
+        notebook = ttk.Notebook(output_frame)
+        notebook.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-    def _create_output_box(self, parent, title):
-        frame = tk.Frame(parent)
-        frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=2)
-        tk.Label(frame, text=title).pack()
+        self.token_output = self._create_tab(notebook, "词法")
+        self.ast_output = self._create_tab(notebook, "AST")
+        self.ir_output = self._create_tab(notebook, "IR")
+        self.tac_output = self._create_tab(notebook, "TAC")
+
+        run_frame = tk.Frame(output_frame)
+        run_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(5, 0))
+        tk.Label(run_frame, text="运行结果").pack()
+        self.run_output = scrolledtext.ScrolledText(run_frame, height=15, state=tk.DISABLED)
+        self.run_output.pack(fill=tk.BOTH, expand=True)
+
+    def _create_tab(self, notebook, title):
+        frame = tk.Frame(notebook)
+        notebook.add(frame, text=title)
         box = scrolledtext.ScrolledText(frame, height=15, state=tk.DISABLED)
         box.pack(fill=tk.BOTH, expand=True)
         return box

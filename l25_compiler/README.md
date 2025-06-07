@@ -19,8 +19,9 @@ For a graphical interface, run:
 python -m l25_compiler.gui
 ```
 
-The GUI shows tokens, AST, IR, TAC and runtime output in separate read-only
-panes labeled in Chinese.
+The GUI presents a notebook with tabs labeled in Chinese for tokens, AST, IR
+and TAC. Selecting a tab shows the corresponding intermediate output. A second
+pane of equal size displays the program's runtime output.
 
 By default the program is interpreted directly. Additional options allow
 inspection of intermediate stages:
