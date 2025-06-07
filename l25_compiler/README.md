@@ -21,7 +21,10 @@ python -m l25_compiler.gui
 
 The GUI presents a notebook with tabs labeled in Chinese for tokens, AST, IR
 and TAC. Selecting a tab shows the corresponding intermediate output. A second
-pane of equal size displays the program's runtime output.
+pane of equal size displays the program's runtime output. When a source file is
+loaded its contents appear in a read-only box above the input area. If the
+program requires input but none is provided, the GUI warns the user instead of
+failing.
 
 By default the program is interpreted directly. Additional options allow
 inspection of intermediate stages:

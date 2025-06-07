@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog, scrolledtext, ttk
+from tkinter import filedialog, scrolledtext, ttk, messagebox
 import io
 from contextlib import redirect_stdout
 from .lexer import tokenize
@@ -79,6 +79,9 @@ class L25GUI:
         tk.Checkbutton(opts, text="TAC", variable=self.tac_var).pack(side=tk.LEFT)
         tk.Checkbutton(opts, text="运行", variable=self.run_var).pack(side=tk.LEFT)
 
+        self.code_display = scrolledtext.ScrolledText(root, height=10, state=tk.DISABLED)
+        self.code_display.pack(fill=tk.BOTH, padx=5)
+
         input_frame = tk.Frame(root)
         input_frame.pack(fill=tk.BOTH, padx=5, pady=5)
         tk.Label(input_frame, text="程序输入(每行一个值):").pack(anchor=tk.W)
@@ -104,6 +107,44 @@ class L25GUI:
         self.run_output = scrolledtext.ScrolledText(run_frame, height=15, state=tk.DISABLED)
         self.run_output.pack(fill=tk.BOTH, expand=True)
 
+    def load_file(self, path):
+        try:
+            with open(path, 'r') as f:
+                code = f.read()
+        except OSError:
+            code = ""
+        self._set_text(self.code_display, code)
+        return code
+
+    def _ast_needs_input(self, ast):
+        from .ast_nodes import Input, While, If, StmtList, FuncDef, Program
+
+        def check_stmt(stmt):
+            if isinstance(stmt, Input):
+                return True
+            if isinstance(stmt, While):
+                return check_list(stmt.body)
+            if isinstance(stmt, If):
+                if check_list(stmt.then):
+                    return True
+                if stmt.else_ and check_list(stmt.else_):
+                    return True
+            return False
+
+        def check_list(stmt_list):
+            for s in stmt_list.stmts:
+                if check_stmt(s):
+                    return True
+            return False
+
+        if isinstance(ast, Program):
+            if check_list(ast.main):
+                return True
+            for f in ast.funcs:
+                if check_list(f.body):
+                    return True
+        return False
+
     def _create_tab(self, notebook, title):
         frame = tk.Frame(notebook)
         notebook.add(frame, text=title)
@@ -122,20 +163,43 @@ class L25GUI:
         path = filedialog.askopenfilename(filetypes=[("L25 files", "*.l25"), ("All files", "*")])
         if path:
             self.path_var.set(path)
+            self.load_file(path)
 
     def compile(self):
         path = self.path_var.get()
         if not path:
             return
-        result = run_compiler(
-            path,
-            show_tokens=bool(self.token_var.get()),
-            show_ast=bool(self.ast_var.get()),
-            show_ir=bool(self.ir_var.get()),
-            show_tac=bool(self.tac_var.get()),
-            run_program=bool(self.run_var.get()),
-            input_text=self.input_text.get("1.0", tk.END),
-        )
+        code = self.load_file(path)
+
+        tokens_list = list(tokenize(code))
+        parser = Parser(tokens_list)
+        try:
+            ast = parser.parse()
+        except Exception as e:
+            messagebox.showerror("解析错误", str(e))
+            return
+
+        input_text = self.input_text.get("1.0", tk.END)
+        if self.run_var.get() and self._ast_needs_input(ast) and not input_text.strip():
+            messagebox.showwarning("缺少输入", "该程序需要输入，请在上方输入框中提供。")
+            return
+
+        try:
+            result = run_compiler(
+                path,
+                show_tokens=bool(self.token_var.get()),
+                show_ast=bool(self.ast_var.get()),
+                show_ir=bool(self.ir_var.get()),
+                show_tac=bool(self.tac_var.get()),
+                run_program=bool(self.run_var.get()),
+                input_text=input_text,
+            )
+        except ValueError:
+            messagebox.showerror("输入错误", "输入数据格式不正确或数量不足。")
+            return
+        except Exception as e:
+            messagebox.showerror("执行错误", str(e))
+            return
 
         self._set_text(self.token_output, result["tokens"])
         self._set_text(self.ast_output, result["ast"])
