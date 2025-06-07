@@ -19,13 +19,14 @@ class StmtList(Node):
         self.stmts = stmts
 
 class Declare(Node):
-    def __init__(self, name, expr=None):
+    def __init__(self, name, expr=None, size=None):
         self.name = name
         self.expr = expr
+        self.size = size
 
 class Assign(Node):
-    def __init__(self, name, expr):
-        self.name = name
+    def __init__(self, target, expr):
+        self.target = target
         self.expr = expr
 
 class If(Node):
@@ -74,3 +75,21 @@ class Number(Node):
 class Identifier(Node):
     def __init__(self, name):
         self.name = name
+
+class ArrayAccess(Node):
+    def __init__(self, array, index):
+        self.array = array
+        self.index = index
+
+class FieldAccess(Node):
+    def __init__(self, obj, field):
+        self.obj = obj
+        self.field = field
+
+class ArrayLiteral(Node):
+    def __init__(self, elements):
+        self.elements = elements
+
+class StructLiteral(Node):
+    def __init__(self, fields):
+        self.fields = fields

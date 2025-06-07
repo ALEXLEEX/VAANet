@@ -37,6 +37,17 @@ class Interpreter:
             return node.value
         if isinstance(node, Identifier):
             return env.get(node.name)
+        if isinstance(node, ArrayAccess):
+            arr = self.eval_expr(node.array, env)
+            idx = self.eval_expr(node.index, env)
+            return arr[idx]
+        if isinstance(node, FieldAccess):
+            obj = self.eval_expr(node.obj, env)
+            return obj.get(node.field)
+        if isinstance(node, ArrayLiteral):
+            return [self.eval_expr(e, env) for e in node.elements]
+        if isinstance(node, StructLiteral):
+            return {k: self.eval_expr(v, env) for k, v in node.fields.items()}
         if isinstance(node, UnaryOp):
             val = self.eval_expr(node.operand, env)
             if node.op == '+':
@@ -77,10 +88,26 @@ class Interpreter:
 
     def exec_stmt(self, stmt, env):
         if isinstance(stmt, Declare):
-            value = self.eval_expr(stmt.expr, env) if stmt.expr else 0
-            env.define(stmt.name, value)
+            if stmt.size is not None:
+                size = self.eval_expr(stmt.size, env)
+                env.define(stmt.name, [0] * size)
+            else:
+                value = self.eval_expr(stmt.expr, env) if stmt.expr else 0
+                env.define(stmt.name, value)
         elif isinstance(stmt, Assign):
-            env.set(stmt.name, self.eval_expr(stmt.expr, env))
+            val = self.eval_expr(stmt.expr, env)
+            target = stmt.target
+            if isinstance(target, Identifier):
+                env.set(target.name, val)
+            elif isinstance(target, ArrayAccess):
+                arr = self.eval_expr(target.array, env)
+                idx = self.eval_expr(target.index, env)
+                arr[idx] = val
+            elif isinstance(target, FieldAccess):
+                obj = self.eval_expr(target.obj, env)
+                obj[target.field] = val
+            else:
+                raise RuntimeError('Invalid assignment target')
         elif isinstance(stmt, If):
             cond = self.eval_expr(stmt.cond, env)
             if cond:

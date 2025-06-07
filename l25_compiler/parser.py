@@ -98,24 +98,27 @@ class Parser:
             return self.output_stmt()
         raise ParserError(f'Unexpected token {tok.type}')
 
-    # declare_stmt = "let" ident [ "=" expr ]
+    # declare_stmt = "let" ident [ "[" expr "]" ] [ "=" expr ]
     def declare_stmt(self):
         self.expect('LET')
         name = self.expect('ID').value
+        size = None
+        if self.accept('LBRACKET'):
+            size = self.expr()
+            self.expect('RBRACKET')
         expr = None
         if self.accept('OP') and self.tokens[self.pos-1].value == '=':
             expr = self.expr()
         else:
-            # step back if not =
             self.pos -= 1 if self.tokens[self.pos-1].type == 'OP' else 0
-        return Declare(name, expr)
+        return Declare(name, expr, size)
 
-    # assign_stmt = ident "=" expr
+    # assign_stmt = variable "=" expr
     def assign_stmt(self):
-        name = self.expect('ID').value
+        target = self.variable()
         self.expect('OP')  # '='
         expr = self.expr()
-        return Assign(name, expr)
+        return Assign(target, expr)
 
     # if_stmt = "if" "(" bool_expr ")" "{" stmt_list "}" [ "else" "{" stmt_list "}" ]
     def if_stmt(self):
@@ -155,6 +158,48 @@ class Parser:
                 args.append(self.expr())
             self.expect('RPAREN')
         return FuncCall(name, args)
+
+    # variable = ident { '[' expr ']' | '.' ident }
+    def variable(self):
+        node = Identifier(self.expect('ID').value)
+        while True:
+            if self.accept('LBRACKET'):
+                idx = self.expr()
+                self.expect('RBRACKET')
+                node = ArrayAccess(node, idx)
+            elif self.accept('DOT'):
+                field = self.expect('ID').value
+                node = FieldAccess(node, field)
+            else:
+                break
+        return node
+
+    def array_literal(self):
+        self.expect('LBRACKET')
+        elems = []
+        if not self.accept('RBRACKET'):
+            elems.append(self.expr())
+            while self.accept('COMMA'):
+                elems.append(self.expr())
+            self.expect('RBRACKET')
+        return ArrayLiteral(elems)
+
+    def struct_literal(self):
+        self.expect('STRUCT')
+        self.expect('LBRACE')
+        fields = {}
+        if self.current().type != 'RBRACE':
+            while True:
+                name = self.expect('ID').value
+                self.expect('OP')  # '='
+                fields[name] = self.expr()
+                if self.accept('SEMICOLON'):
+                    if self.current().type == 'RBRACE':
+                        break
+                else:
+                    break
+        self.expect('RBRACE')
+        return StructLiteral(fields)
 
     # input_stmt = "input" "(" ident { "," ident } ")"
     def input_stmt(self):
@@ -208,7 +253,7 @@ class Parser:
             node = BinaryOp(op, node, right)
         return node
 
-    # factor = ident | number | "(" expr ")" | func_call
+    # factor = ident | number | "(" expr ")" | func_call | array_literal | struct_literal
     def factor(self):
         tok = self.current()
         if tok.type == 'NUMBER':
@@ -218,8 +263,11 @@ class Parser:
             if self.tokens[self.pos+1].type == 'LPAREN':
                 return self.func_call()
             else:
-                self.pos += 1
-                return Identifier(tok.value)
+                return self.variable()
+        if tok.type == 'LBRACKET':
+            return self.array_literal()
+        if tok.type == 'STRUCT':
+            return self.struct_literal()
         if self.accept('LPAREN'):
             node = self.expr()
             self.expect('RPAREN')

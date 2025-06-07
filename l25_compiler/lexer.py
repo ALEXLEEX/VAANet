@@ -9,6 +9,9 @@ TOKEN_SPEC = [
     ('RPAREN', r'\)'),
     ('LBRACE', r'\{'),
     ('RBRACE', r'\}'),
+    ('LBRACKET', r'\['),
+    ('RBRACKET', r'\]'),
+    ('DOT', r'\.'),
     ('COMMA', r','),
     ('SEMICOLON', r';'),
     ('STRING', r'"[^"\\]*(?:\\.[^"\\]*)*"'),
@@ -21,7 +24,7 @@ tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in TOKEN_SPEC)
 
 KEYWORDS = {
     'program', 'func', 'return', 'if', 'else', 'while',
-    'let', 'input', 'output', 'main'
+    'let', 'input', 'output', 'main', 'struct'
 }
 
 class Token:
