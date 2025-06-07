@@ -6,6 +6,7 @@ from .interpreter import Interpreter
 from .ir import IRGenerator
 from .tac import ThreeAddressGenerator
 from .utils import dump_ast
+from .gui import run_compiler, L25GUI
 
 __all__ = [
     "tokenize",
@@ -14,4 +15,6 @@ __all__ = [
     "IRGenerator",
     "ThreeAddressGenerator",
     "dump_ast",
+    "run_compiler",
+    "L25GUI",
 ]

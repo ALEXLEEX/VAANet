@@ -13,6 +13,12 @@ iteration.
 python -m l25_compiler.main [options] <source.l25>
 ```
 
+For a graphical interface, run:
+
+```
+python -m l25_compiler.gui
+```
+
 By default the program is interpreted directly. Additional options allow
 inspection of intermediate stages:
 
