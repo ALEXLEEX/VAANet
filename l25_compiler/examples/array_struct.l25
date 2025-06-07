@@ -1,0 +1,11 @@
+program demo {
+main {
+    let arr[3];
+    arr[0] = 1;
+    arr[1] = 2;
+    arr[2] = arr[0] + arr[1];
+    let p = struct { x = arr[2]; y = 4; };
+    p.y = p.y + arr[0];
+    output(p.x, p.y);
+}
+}

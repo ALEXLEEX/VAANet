@@ -1,0 +1,19 @@
+program fib {
+main {
+    input(n);
+    let a = 0;
+    let b = 1;
+    output(a);
+    if (n > 0) {
+        output(b);
+        let i = 2;
+        while (i <= n) {
+            let c = a + b;
+            output(c);
+            a = b;
+            b = c;
+            i = i + 1;
+        };
+    };
+}
+}
