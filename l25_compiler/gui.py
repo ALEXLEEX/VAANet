@@ -7,10 +7,11 @@ from .parser import Parser
 from .utils import dump_ast
 from .ir import IRGenerator
 from .tac import ThreeAddressGenerator
+from .pcode import PCodeGenerator
 from .interpreter import Interpreter
 
 
-def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_tac=False, run_program=True, input_text=""):
+def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_tac=False, show_pcode=False, run_program=True, input_text=""):
     with open(path) as f:
         code = f.read()
 
@@ -23,6 +24,7 @@ def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_ta
 
     ir_str = "\n".join(IRGenerator().generate(ast)) if show_ir else ""
     tac_str = "\n".join(ThreeAddressGenerator().generate(ast)) if show_tac else ""
+    pcode_str = "\n".join(PCodeGenerator().generate(ast)) if show_pcode else ""
 
     program_output = ""
     if run_program:
@@ -50,6 +52,7 @@ def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_ta
         "ast": ast_str,
         "ir": ir_str,
         "tac": tac_str,
+        "pcode": pcode_str,
         "output": program_output,
     }
 
@@ -72,11 +75,13 @@ class L25GUI:
         self.ast_var = tk.IntVar()
         self.ir_var = tk.IntVar()
         self.tac_var = tk.IntVar()
+        self.pcode_var = tk.IntVar()
         self.run_var = tk.IntVar(value=1)
         tk.Checkbutton(opts, text="词法", variable=self.token_var).pack(side=tk.LEFT)
         tk.Checkbutton(opts, text="AST", variable=self.ast_var).pack(side=tk.LEFT)
         tk.Checkbutton(opts, text="IR", variable=self.ir_var).pack(side=tk.LEFT)
         tk.Checkbutton(opts, text="TAC", variable=self.tac_var).pack(side=tk.LEFT)
+        tk.Checkbutton(opts, text="PCODE", variable=self.pcode_var).pack(side=tk.LEFT)
         tk.Checkbutton(opts, text="运行", variable=self.run_var).pack(side=tk.LEFT)
 
         self.code_display = scrolledtext.ScrolledText(root, height=10, state=tk.DISABLED)
@@ -100,6 +105,7 @@ class L25GUI:
         self.ast_output = self._create_tab(notebook, "AST")
         self.ir_output = self._create_tab(notebook, "IR")
         self.tac_output = self._create_tab(notebook, "TAC")
+        self.pcode_output = self._create_tab(notebook, "PCODE")
 
         run_frame = tk.Frame(output_frame)
         run_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(5, 0))
@@ -191,6 +197,7 @@ class L25GUI:
                 show_ast=bool(self.ast_var.get()),
                 show_ir=bool(self.ir_var.get()),
                 show_tac=bool(self.tac_var.get()),
+                show_pcode=bool(self.pcode_var.get()),
                 run_program=bool(self.run_var.get()),
                 input_text=input_text,
             )
@@ -205,6 +212,7 @@ class L25GUI:
         self._set_text(self.ast_output, result["ast"])
         self._set_text(self.ir_output, result["ir"])
         self._set_text(self.tac_output, result["tac"])
+        self._set_text(self.pcode_output, result["pcode"])
         self._set_text(self.run_output, result["output"])
 
 

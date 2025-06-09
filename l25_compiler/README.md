@@ -19,8 +19,8 @@ For a graphical interface, run:
 python -m l25_compiler.gui
 ```
 
-The GUI presents a notebook with tabs labeled in Chinese for tokens, AST, IR
-and TAC. Selecting a tab shows the corresponding intermediate output. A second
+The GUI presents a notebook with tabs labeled in Chinese for tokens, AST, IR,
+TAC and PCODE. Selecting a tab shows the corresponding intermediate output. A second
 pane of equal size displays the program's runtime output. When a source file is
 loaded its contents appear in a read-only box above the input area. If the
 program requires input but none is provided, the GUI warns the user instead of
@@ -33,6 +33,7 @@ inspection of intermediate stages:
 - `--ast` &ndash; dump the parsed abstract syntax tree
 - `--ir` &ndash; print a simplified intermediate representation
 - `--tac` &ndash; emit linear three-address code
+- `--pcode` &ndash; emit stack-based pcode instructions
 - `--no-run` &ndash; skip execution after generating the chosen outputs
 
 ## Testing
@@ -43,8 +44,8 @@ one normally or request intermediate output:
 ```
 python -m l25_compiler.main examples/factorial.l25
 
-# show tokens and IR only
-    python -m l25_compiler.main --tokens --ir --tac --no-run \
+# show tokens and intermediate code only
+    python -m l25_compiler.main --tokens --ir --tac --pcode --no-run \
     examples/factorial.l25
 ```
 
