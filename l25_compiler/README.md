@@ -72,3 +72,5 @@ The interpreter provides a few built-in functions for manipulating `map` and
 - `array_struct.l25`: Demonstrates arrays and structs.
 - `pointer.l25`: Demonstrates basic pointer usage.
 - `map_set.l25`: Demonstrates map and set operations using all helper functions.
+- `complex_edge.l25`: Exercises struct arrays, pointer manipulation and
+  boundary behaviors of map/set helpers.
