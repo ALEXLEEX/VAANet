@@ -80,6 +80,12 @@ def dump_ast(node, indent=0):
         for s in node.body.stmts:
             lines.extend(dump_ast(s, indent + 2))
         return lines
+    if isinstance(node, DoUntil):
+        lines = [f"{sp}do:"]
+        for s in node.body.stmts:
+            lines.extend(dump_ast(s, indent + 2))
+        lines.append(f"{sp}until {dump_ast(node.cond)[0].strip()}")
+        return lines
     if isinstance(node, Return):
         return [f"{sp}return {dump_ast(node.expr)[0].strip()}"]
     raise RuntimeError('Unknown node')

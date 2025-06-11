@@ -40,6 +40,11 @@ class While(Node):
         self.cond = cond
         self.body = body
 
+class DoUntil(Node):
+    def __init__(self, cond, body):
+        self.cond = cond
+        self.body = body
+
 class Input(Node):
     def __init__(self, names):
         self.names = names

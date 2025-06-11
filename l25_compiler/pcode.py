@@ -115,6 +115,13 @@ class PCodeGenerator:
                 self.stmt(s)
             self.emit(f"JMP {start}")
             self.emit(f"{end}:")
+        elif isinstance(node, DoUntil):
+            start = self.new_label()
+            self.emit(f"{start}:")
+            for s in node.body.stmts:
+                self.stmt(s)
+            self.expr(node.cond)
+            self.emit(f"JZ {start}")
         else:
             raise RuntimeError('Unknown statement')
 

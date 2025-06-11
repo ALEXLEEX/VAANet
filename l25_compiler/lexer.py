@@ -24,7 +24,7 @@ TOKEN_SPEC = [
 tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in TOKEN_SPEC)
 
 KEYWORDS = {
-    'program', 'func', 'return', 'if', 'else', 'while',
+    'program', 'func', 'return', 'if', 'else', 'while', 'do', 'until',
     'let', 'input', 'output', 'main', 'struct', 'map', 'set'
 }
 

@@ -103,6 +103,13 @@ class ThreeAddressGenerator:
                 self.stmt(s)
             self.lines.append(f"goto {label_start}")
             self.lines.append(f"{label_end}:")
+        elif isinstance(node, DoUntil):
+            label_start = self.new_label()
+            self.lines.append(f"{label_start}:")
+            for s in node.body.stmts:
+                self.stmt(s)
+            cond = self.expr(node.cond)
+            self.lines.append(f"if_false {cond} goto {label_start}")
         else:
             raise RuntimeError('Unknown statement')
 

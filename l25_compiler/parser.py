@@ -94,6 +94,8 @@ class Parser:
             return self.if_stmt()
         if tok.type == 'WHILE':
             return self.while_stmt()
+        if tok.type == 'DO':
+            return self.do_until_stmt()
         if tok.type == 'INPUT':
             return self.input_stmt()
         if tok.type == 'OUTPUT':
@@ -153,6 +155,18 @@ class Parser:
         body = self.stmt_list()
         self.expect('RBRACE')
         return While(cond, body)
+
+    # do_until_stmt = 'do' '{' stmt_list '}' 'until' '(' bool_expr ')'
+    def do_until_stmt(self):
+        self.expect('DO')
+        self.expect('LBRACE')
+        body = self.stmt_list()
+        self.expect('RBRACE')
+        self.expect('UNTIL')
+        self.expect('LPAREN')
+        cond = self.bool_expr()
+        self.expect('RPAREN')
+        return DoUntil(cond, body)
 
     # func_call = ident "(" [ arg_list ] ")"
     def func_call(self):

@@ -159,6 +159,11 @@ class Interpreter:
         elif isinstance(stmt, While):
             while self.eval_expr(stmt.cond, env):
                 self.exec_stmt_list(stmt.body, Environment(env))
+        elif isinstance(stmt, DoUntil):
+            while True:
+                self.exec_stmt_list(stmt.body, Environment(env))
+                if self.eval_expr(stmt.cond, env):
+                    break
         elif isinstance(stmt, Input):
             for name in stmt.names:
                 val = int(input(f'{name}: '))

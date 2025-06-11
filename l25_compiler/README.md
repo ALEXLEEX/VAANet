@@ -3,9 +3,9 @@
 This directory contains a simple compiler and interpreter for the L25 language
 written in Python. In addition to the base features, it implements support for
 one‑dimensional static arrays, simple structures (structs), basic pointer
-operations (`&` address-of and `*` dereference), and simple `map`/`set`
-containers with helper functions for insertion, deletion, lookup and
-iteration.
+operations (`&` address-of and `*` dereference), simple `map`/`set` containers
+with helper functions for insertion, deletion, lookup and iteration, and a
+`do...until` loop construct.
 
 ## Usage
 
@@ -74,3 +74,4 @@ The interpreter provides a few built-in functions for manipulating `map` and
 - `map_set.l25`: Demonstrates map and set operations using all helper functions.
 - `complex_edge.l25`: Exercises struct arrays, pointer manipulation and
   boundary behaviors of map/set helpers.
+- `do_until.l25`: Shows the new `do...until` looping construct.

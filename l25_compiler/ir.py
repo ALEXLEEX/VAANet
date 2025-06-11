@@ -65,6 +65,12 @@ class IRGenerator:
                 lines += self.stmt(s, indent + 2)
             lines.append(f"{sp}}}")
             return lines
+        if isinstance(node, DoUntil):
+            lines = [f"{sp}do {{"]
+            for s in node.body.stmts:
+                lines += self.stmt(s, indent + 2)
+            lines.append(f"{sp}}} until {self.expr(node.cond)}")
+            return lines
         raise RuntimeError('Unknown stmt')
 
     def stmt_list(self, stmt_list, indent=0):
