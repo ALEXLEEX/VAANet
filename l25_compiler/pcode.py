@@ -45,15 +45,26 @@ class PCodeGenerator:
                 self.emit("SET_ADD")
             self.emit("SET")
         elif isinstance(node, UnaryOp):
-            self.expr(node.operand)
-            if node.op == '-':
-                self.emit('NEG')
-            elif node.op == '+':
-                pass
-            elif node.op == '&':
-                self.emit('ADDR')
-            elif node.op == '*':
-                self.emit('DEREF')
+            if node.op == '&':
+                if isinstance(node.operand, Identifier):
+                    self.emit(f"ADDR {node.operand.name}")
+                elif isinstance(node.operand, ArrayAccess):
+                    self.expr(node.operand.array)
+                    self.expr(node.operand.index)
+                    self.emit("AADDR")
+                elif isinstance(node.operand, FieldAccess):
+                    self.expr(node.operand.obj)
+                    self.emit(f"FADDR {node.operand.field}")
+                else:
+                    raise RuntimeError('invalid address-of operand')
+            else:
+                self.expr(node.operand)
+                if node.op == '-':
+                    self.emit('NEG')
+                elif node.op == '+':
+                    pass
+                elif node.op == '*':
+                    self.emit('DEREF')
         elif isinstance(node, BinaryOp):
             self.expr(node.left)
             self.expr(node.right)
@@ -87,6 +98,7 @@ class PCodeGenerator:
             for e in node.exprs:
                 self.expr(e)
                 self.emit("PRINT")
+            self.emit("NEWLINE")
         elif isinstance(node, FuncCall):
             self.expr(node)
             self.emit("POP")

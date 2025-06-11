@@ -2,7 +2,7 @@
 
 from .lexer import tokenize
 from .parser import Parser
-from .interpreter import Interpreter
+from .pcode_vm import PCodeVM
 from .ir import IRGenerator
 from .tac import ThreeAddressGenerator
 from .pcode import PCodeGenerator
@@ -12,7 +12,7 @@ from .gui import run_compiler, L25GUI
 __all__ = [
     "tokenize",
     "Parser",
-    "Interpreter",
+    "PCodeVM",
     "IRGenerator",
     "ThreeAddressGenerator",
     "PCodeGenerator",

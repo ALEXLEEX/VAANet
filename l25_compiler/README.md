@@ -1,7 +1,8 @@
 # L25 Compiler (Basic)
 
-This directory contains a simple compiler and interpreter for the L25 language
-written in Python. In addition to the base features, it implements support for
+This directory contains a simple compiler for the L25 language written in
+Python. Source files are translated into a stack-based pcode which is executed
+by a small virtual machine. In addition to the base features, it implements support for
 one‑dimensional static arrays, simple structures (structs), basic pointer
 operations (`&` address-of and `*` dereference), simple `map`/`set` containers
 with helper functions for insertion, deletion, lookup and iteration, and a
@@ -26,7 +27,7 @@ loaded its contents appear in a read-only box above the input area. If the
 program requires input but none is provided, the GUI warns the user instead of
 failing.
 
-By default the program is interpreted directly. Additional options allow
+By default the compiled pcode is executed on the virtual machine. Additional options allow
 inspection of intermediate stages:
 
 - `--tokens` &ndash; output the token stream
@@ -51,7 +52,7 @@ python -m l25_compiler.main examples/factorial.l25
 
 ### Map/Set Helpers
 
-The interpreter provides a few built-in functions for manipulating `map` and
+The virtual machine provides a few built-in functions for manipulating `map` and
 `set` values:
 
 - `map_insert(m, key, value)` – add or update an entry

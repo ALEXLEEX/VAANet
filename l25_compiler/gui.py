@@ -1,14 +1,12 @@
 import tkinter as tk
 from tkinter import filedialog, scrolledtext, ttk, messagebox
-import io
-from contextlib import redirect_stdout
 from .lexer import tokenize
 from .parser import Parser
 from .utils import dump_ast
 from .ir import IRGenerator
 from .tac import ThreeAddressGenerator
 from .pcode import PCodeGenerator
-from .interpreter import Interpreter
+from .pcode_vm import PCodeVM
 
 
 def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_tac=False, show_pcode=False, run_program=True, input_text=""):
@@ -24,28 +22,14 @@ def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_ta
 
     ir_str = "\n".join(IRGenerator().generate(ast)) if show_ir else ""
     tac_str = "\n".join(ThreeAddressGenerator().generate(ast)) if show_tac else ""
-    pcode_str = "\n".join(PCodeGenerator().generate(ast)) if show_pcode else ""
+    pcode_lines = PCodeGenerator().generate(ast)
+    pcode_str = "\n".join(pcode_lines) if show_pcode else ""
 
     program_output = ""
     if run_program:
-        inputs = iter(input_text.splitlines())
-
-        def fake_input(prompt=""):
-            try:
-                return next(inputs)
-            except StopIteration:
-                return ""
-
-        buf = io.StringIO()
-        import builtins
-        real_input = builtins.input
-        builtins.input = fake_input
-        try:
-            with redirect_stdout(buf):
-                Interpreter(ast).run()
-        finally:
-            builtins.input = real_input
-        program_output = buf.getvalue().strip()
+        vm = PCodeVM(pcode_lines, ast)
+        inputs = input_text.splitlines()
+        program_output = vm.run(inputs)
 
     return {
         "tokens": tokens_str,

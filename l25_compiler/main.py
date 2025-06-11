@@ -1,7 +1,7 @@
 import argparse
 from .lexer import tokenize
 from .parser import Parser
-from .interpreter import Interpreter
+from .pcode_vm import PCodeVM
 from .utils import dump_ast
 from .ir import IRGenerator
 from .tac import ThreeAddressGenerator
@@ -59,8 +59,10 @@ def main():
             return
 
     if not args.no_run:
-        interpreter = Interpreter(ast)
-        interpreter.run()
+        vm = PCodeVM(pcode_lines, ast)
+        output = vm.run()
+        if output:
+            print(output)
 
 if __name__ == "__main__":
     main()
