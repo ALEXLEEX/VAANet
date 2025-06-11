@@ -1,0 +1,11 @@
+program demo {
+main {
+    let i = 0;
+    let sum = 0;
+    do {
+        i = i + 1;
+        sum = sum + i;
+    } until (i >= 5);
+    output(sum);
+}
+}
