@@ -9,9 +9,7 @@ from .pcode import PCodeGenerator
 from .pcode_vm import PCodeVM
 
 
-def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_tac=False, show_pcode=False, run_program=True, input_text=""):
-    with open(path) as f:
-        code = f.read()
+def run_compiler(code, show_tokens=False, show_ast=False, show_ir=False, show_tac=False, show_pcode=False, run_program=True, input_text=""):
 
     tokens_list = list(tokenize(code))
     tokens_str = "\n".join(str(t) for t in tokens_list) if show_tokens else ""
@@ -26,10 +24,15 @@ def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_ta
     pcode_str = "\n".join(pcode_lines) if show_pcode else ""
 
     program_output = ""
+    error_msg = ""
     if run_program:
         vm = PCodeVM(pcode_lines, ast)
         inputs = input_text.splitlines()
-        program_output = vm.run(inputs)
+        try:
+            program_output = vm.run(inputs)
+        except Exception as e:
+            program_output = "\n".join(vm.output_lines).strip()
+            error_msg = str(e)
 
     return {
         "tokens": tokens_str,
@@ -38,6 +41,7 @@ def run_compiler(path, show_tokens=False, show_ast=False, show_ir=False, show_ta
         "tac": tac_str,
         "pcode": pcode_str,
         "output": program_output,
+        "error": error_msg,
     }
 
 
@@ -68,7 +72,7 @@ class L25GUI:
         tk.Checkbutton(opts, text="PCODE", variable=self.pcode_var).pack(side=tk.LEFT)
         tk.Checkbutton(opts, text="运行", variable=self.run_var).pack(side=tk.LEFT)
 
-        self.code_display = scrolledtext.ScrolledText(root, height=10, state=tk.DISABLED)
+        self.code_display = scrolledtext.ScrolledText(root, height=10)
         self.code_display.pack(fill=tk.BOTH, padx=5)
 
         input_frame = tk.Frame(root)
@@ -103,7 +107,8 @@ class L25GUI:
                 code = f.read()
         except OSError:
             code = ""
-        self._set_text(self.code_display, code)
+        self.code_display.delete("1.0", tk.END)
+        self.code_display.insert(tk.END, code)
         return code
 
     def _ast_needs_input(self, ast):
@@ -156,10 +161,9 @@ class L25GUI:
             self.load_file(path)
 
     def compile(self):
-        path = self.path_var.get()
-        if not path:
+        code = self.code_display.get("1.0", tk.END)
+        if not code.strip():
             return
-        code = self.load_file(path)
 
         tokens_list = list(tokenize(code))
         parser = Parser(tokens_list)
@@ -176,7 +180,7 @@ class L25GUI:
 
         try:
             result = run_compiler(
-                path,
+                code,
                 show_tokens=bool(self.token_var.get()),
                 show_ast=bool(self.ast_var.get()),
                 show_ir=bool(self.ir_var.get()),
@@ -191,6 +195,9 @@ class L25GUI:
         except Exception as e:
             messagebox.showerror("执行错误", str(e))
             return
+
+        if result.get("error"):
+            messagebox.showerror("执行错误", result["error"])
 
         self._set_text(self.token_output, result["tokens"])
         self._set_text(self.ast_output, result["ast"])

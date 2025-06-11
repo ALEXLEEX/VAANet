@@ -23,9 +23,10 @@ python -m l25_compiler.gui
 The GUI presents a notebook with tabs labeled in Chinese for tokens, AST, IR,
 TAC and PCODE. Selecting a tab shows the corresponding intermediate output. A second
 pane of equal size displays the program's runtime output. When a source file is
-loaded its contents appear in a read-only box above the input area. If the
-program requires input but none is provided, the GUI warns the user instead of
-failing.
+loaded its contents appear in an **editable** box above the input area so you can
+modify the code and recompile at any time. If the program requires input but none
+is provided, the GUI issues a warning. Should a runtime error occur, any output
+produced before the error is still shown.
 
 By default the compiled pcode is executed on the virtual machine. Additional options allow
 inspection of intermediate stages:

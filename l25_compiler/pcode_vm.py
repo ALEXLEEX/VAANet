@@ -75,23 +75,30 @@ class PCodeVM:
     def run(self, inputs=None):
         if inputs is None:
             inputs = []
+        self.output_lines = []
+        self.current_line = []
         self.input_iter = iter(inputs)
         ip = self.main_addr
-        while ip < len(self.lines):
-            parts = self.lines[ip].split()
-            if not parts:
-                ip += 1
-                continue
-            instr = parts[0]
-            if instr.endswith(':'):
-                ip += 1
-                continue
-            if instr == 'END':
-                self._flush_line()
-                break
-            ip = self._exec(instr, parts[1:], ip)
-            self.prev_instr = instr
-        return '\n'.join(self.output_lines).strip()
+        try:
+            while ip < len(self.lines):
+                parts = self.lines[ip].split()
+                if not parts:
+                    ip += 1
+                    continue
+                instr = parts[0]
+                if instr.endswith(':'):
+                    ip += 1
+                    continue
+                if instr == 'END':
+                    self._flush_line()
+                    break
+                ip = self._exec(instr, parts[1:], ip)
+                self.prev_instr = instr
+            self._flush_line()
+            return '\n'.join(self.output_lines).strip()
+        except Exception:
+            self._flush_line()
+            raise
 
     def _flush_line(self):
         if self.current_line:
