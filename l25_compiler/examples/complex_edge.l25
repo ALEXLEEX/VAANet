@@ -1,0 +1,37 @@
+program complex {
+func inc(p) {
+    *p = *p + 1;
+    return 0;
+}
+main {
+    let arr[2];
+    arr[0] = struct {x = 1; y = 2;};
+    arr[1] = struct {x = 3; y = 4;};
+    inc(&arr[0].x);
+    inc(&arr[1].y);
+    output(arr[0].x, arr[1].y);
+
+    let m = map {1: 10;};
+    output(map_get(m, 2));
+    map_delete(m, 2);
+    map_insert(m, 1, 11);
+    map_insert(m, 2, 22);
+    let ks = map_keys(m);
+    output(ks[0], ks[1]);
+    output(m[ks[0]], m[ks[1]]);
+
+    let s = set {1;};
+    set_remove(s, 2);
+    set_add(s, 2);
+    set_add(s, 1);
+    let its = set_items(s);
+    output(its[0], its[1]);
+    output(set_contains(s, 1), set_contains(s, 3));
+
+    let i = 0;
+    while (i < 0) {
+        output(i);
+        i = i + 1;
+    };
+}
+}

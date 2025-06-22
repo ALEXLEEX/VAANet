@@ -1,0 +1,29 @@
+program demo {
+main {
+    let m = map { 1: 10; 2: 20; };
+    let s = set { 3; };
+
+    map_insert(m, 3, 30);
+    map_delete(m, 1);
+    output(map_has(m, 1), map_has(m, 3));
+    output(map_get(m, 2), map_get(m, 3));
+
+    let keys = map_keys(m);
+    let i = 0;
+    while (i < 2) {
+        output(keys[i], m[keys[i]]);
+        i = i + 1;
+    };
+
+    set_add(s, 4);
+    set_remove(s, 3);
+    output(set_contains(s, 3), set_contains(s, 4));
+
+    let items = set_items(s);
+    let j = 0;
+    while (j < 1) {
+        output(items[j]);
+        j = j + 1;
+    };
+}
+}
